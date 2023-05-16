@@ -2,21 +2,24 @@
   "name": "socket",
   "version": "0.0.1",
   "description": "A Node.js Implementation of the Cloudflare Socket API",
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "keywords": [],
+  "homepage": "https://github.com/vercel/socket#readme",
+  "bugs": {
+    "url": "https://github.com/vercel/socket/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vercel/socket.git"
   },
-  "keywords": [],
-  "author": "Ethan Arrowood <ethan@arrowood.dev>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/vercel/socket/issues"
+  "author": "Ethan Arrowood <ethan@arrowood.dev>",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier .",
+    "lint": "eslint ."
   },
-  "homepage": "https://github.com/vercel/socket#readme",
+  "prettier": "@vercel/style-guide/prettier",
   "devDependencies": {
     "@types/node": "^20.1.7",
     "@vercel/style-guide": "^4.0.2",
