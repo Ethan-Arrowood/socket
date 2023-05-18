@@ -1,4 +1,5 @@
 import net from 'node:net';
+import tls from 'node:tls';
 import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 interface SocketOptions {
@@ -8,14 +9,14 @@ interface SocketOptions {
    * `on` — Use TLS.
    * `starttls` — Do not use TLS initially, but allow the socket to be upgraded to use TLS by calling startTls().
    */
-  secureTransport: 'off' | 'on' | 'starttls';
+  secureTransport?: 'off' | 'on' | 'starttls';
   /**
    * Defines whether the writable side of the TCP socket will automatically close on end-of-file (EOF).
    * When set to false, the writable side of the TCP socket will automatically close on EOF.
    * When set to true, the writable side of the TCP socket will remain open on EOF.
    * This option is similar to that offered by the Node.js net module and allows interoperability with code which utilizes it.
    */
-  allowHalfOpen: boolean;
+  allowHalfOpen?: boolean;
 }
 
 interface SocketAddress {
@@ -40,19 +41,24 @@ export function connect(
   return new Socket(address, options);
 }
 
-export class Socket {
+class Socket {
 
-  socket: net.Socket;
   readable: ReadableStream;
   writable: WritableStream;
   closed: Promise<void>;
-
+  
+  private socket: net.Socket | tls.TLSSocket;
+  private allowHalfOpen: boolean;
+  private secureTransport: SocketOptions["secureTransport"];
   private closedResolved = false;
   private closedRejected = false;
   private closedResolve!: () => void;
   private closedReject!: (reason?: any) => void;
+  private startTlsCalled = false;
 
-  constructor(address: SocketAddress, options: SocketOptions = { secureTransport: "off", allowHalfOpen: true }) {
+  constructor(addressOrSocket: SocketAddress | Socket, options?: SocketOptions) {
+    this.secureTransport = options?.secureTransport ?? 'off';
+    this.allowHalfOpen = options?.allowHalfOpen ?? true;
 
     this.closed = new Promise((resolve, reject) => {
       this.closedResolve = (): void => {
@@ -65,9 +71,11 @@ export class Socket {
       }
     });
 
-    this.socket = new net.Socket({
-      allowHalfOpen: options.allowHalfOpen
-    })
+    this.socket = addressOrSocket instanceof Socket
+      ? new tls.TLSSocket(addressOrSocket.socket)
+      : new net.Socket({
+        allowHalfOpen: this.allowHalfOpen
+      })
 
     this.socket.on('close', (hadError) => {
       if (!hadError && !this.closedFulfilled && !this.closedResolved) {
@@ -86,8 +94,9 @@ export class Socket {
     this.readable = readable;
     this.writable = writable;
 
-    this.socket.connect(address)
-
+    if (typeof addressOrSocket === 'string') {
+      this.socket.connect(addressOrSocket)
+    }
   }
   get closedFulfilled (): boolean {
     return this.closedResolved || this.closedRejected
@@ -97,7 +106,19 @@ export class Socket {
     this.socket.destroy();
     this.closedResolve();
   }
-  // TODO
-  // startTls(): Socket {
-  // }
+
+  startTls(): Socket {
+    if (this.secureTransport !== 'starttls') {
+      throw new Error("secureTransport must be set to 'starttls'")
+    }
+    if (this.startTlsCalled) {
+      throw new Error("can only call startTls once")
+    } else {
+      this.startTlsCalled = true;
+    }
+
+    this.close();
+
+    return new Socket(this, { secureTransport: 'starttls' })
+  }
 }
