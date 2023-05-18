@@ -46,7 +46,7 @@ class Socket {
   readable: ReadableStream;
   writable: WritableStream;
   closed: Promise<void>;
-  
+
   private socket: net.Socket | tls.TLSSocket;
   private allowHalfOpen: boolean;
   private secureTransport: SocketOptions["secureTransport"];
@@ -94,7 +94,7 @@ class Socket {
     this.readable = readable;
     this.writable = writable;
 
-    if (typeof addressOrSocket === 'string') {
+    if (!(addressOrSocket instanceof Socket)) {
       this.socket.connect(addressOrSocket)
     }
   }
