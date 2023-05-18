@@ -2,7 +2,7 @@ import net from 'node:net';
 import tls from 'node:tls';
 import type { ReadableStream, WritableStream } from 'node:stream/web';
 
-interface SocketOptions {
+export interface SocketOptions {
   /** 
    * Specifies whether or not to use TLS when creating the TCP socket.
    * `off` — Do not use TLS.
@@ -19,7 +19,7 @@ interface SocketOptions {
   allowHalfOpen?: boolean;
 }
 
-interface SocketAddress {
+export interface SocketAddress {
   /** The hostname to connect to. Example: `vercel.com`. */
   hostname: string;
   /** The port number to connect to. Example: `5432`. */
@@ -41,7 +41,7 @@ export function connect(
   return new Socket(address, options);
 }
 
-class Socket {
+export class Socket {
 
   readable: ReadableStream;
   writable: WritableStream;
