@@ -3,7 +3,7 @@ import tls from 'node:tls';
 import type { ReadableStream, WritableStream } from 'node:stream/web';
 
 export interface SocketOptions {
-  /** 
+  /**
    * Specifies whether or not to use TLS when creating the TCP socket.
    * `off` — Do not use TLS.
    * `on` — Use TLS.
@@ -35,28 +35,30 @@ export function connect(
     // eslint-disable-next-line no-param-reassign
     address = {
       hostname: url.hostname,
-      port: parseInt(url.port)
-    }
+      port: parseInt(url.port),
+    };
   }
   return new Socket(address, options);
 }
 
 export class Socket {
-
   readable: ReadableStream;
   writable: WritableStream;
   closed: Promise<void>;
 
   private socket: net.Socket | tls.TLSSocket;
   private allowHalfOpen: boolean;
-  private secureTransport: SocketOptions["secureTransport"];
+  private secureTransport: SocketOptions['secureTransport'];
   private closedResolved = false;
   private closedRejected = false;
   private closedResolve!: () => void;
   private closedReject!: (reason?: any) => void;
   private startTlsCalled = false;
 
-  constructor(addressOrSocket: SocketAddress | Socket, options?: SocketOptions) {
+  constructor(
+    addressOrSocket: SocketAddress | Socket,
+    options?: SocketOptions,
+  ) {
     this.secureTransport = options?.secureTransport ?? 'off';
     this.allowHalfOpen = options?.allowHalfOpen ?? true;
 
@@ -68,38 +70,41 @@ export class Socket {
       this.closedReject = (): void => {
         this.closedRejected = true;
         reject();
-      }
+      };
     });
 
-    this.socket = addressOrSocket instanceof Socket
-      ? new tls.TLSSocket(addressOrSocket.socket)
-      : new net.Socket({
-        allowHalfOpen: this.allowHalfOpen
-      })
+    this.socket =
+      addressOrSocket instanceof Socket
+        ? new tls.TLSSocket(addressOrSocket.socket)
+        : new net.Socket({
+            allowHalfOpen: this.allowHalfOpen,
+          });
 
     this.socket.on('close', (hadError) => {
       if (!hadError && !this.closedFulfilled && !this.closedResolved) {
         this.closedResolve();
       }
-    })
+    });
 
     this.socket.on('error', (err) => {
       if (!this.closedFulfilled && !this.closedRejected) {
         this.closedReject(err);
       }
-    })
+    });
 
     // types are wrong. fixed based on docs https://nodejs.org/dist/latest-v19.x/docs/api/stream.html#streamduplextowebstreamduplex
-    const { readable, writable } = net.Socket.Duplex.toWeb(this.socket) as unknown as { readable: ReadableStream, writable: WritableStream};
+    const { readable, writable } = net.Socket.Duplex.toWeb(
+      this.socket,
+    ) as unknown as { readable: ReadableStream; writable: WritableStream };
     this.readable = readable;
     this.writable = writable;
 
     if (!(addressOrSocket instanceof Socket)) {
-      this.socket.connect(addressOrSocket)
+      this.socket.connect(addressOrSocket);
     }
   }
-  get closedFulfilled (): boolean {
-    return this.closedResolved || this.closedRejected
+  get closedFulfilled(): boolean {
+    return this.closedResolved || this.closedRejected;
   }
   // eslint-disable-next-line @typescript-eslint/require-await
   async close(): Promise<void> {
@@ -109,16 +114,16 @@ export class Socket {
 
   startTls(): Socket {
     if (this.secureTransport !== 'starttls') {
-      throw new Error("secureTransport must be set to 'starttls'")
+      throw new Error("secureTransport must be set to 'starttls'");
     }
     if (this.startTlsCalled) {
-      throw new Error("can only call startTls once")
+      throw new Error('can only call startTls once');
     } else {
       this.startTlsCalled = true;
     }
 
     this.close();
 
-    return new Socket(this, { secureTransport: 'starttls' })
+    return new Socket(this, { secureTransport: 'starttls' });
   }
 }
