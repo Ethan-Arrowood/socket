@@ -122,7 +122,7 @@ export class Socket {
       this.startTlsCalled = true;
     }
 
-    this.close();
+    void this.close();
 
     return new Socket(this, { secureTransport: 'starttls' });
   }

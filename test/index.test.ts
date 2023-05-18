@@ -22,6 +22,7 @@ tap.test('Socket connected to tcp server with secureTransport: off', (t) => {
     await once(server, 'connection');
     await writer.write(m);
     const read = await reader.read();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const res = Buffer.from(read.value).toString();
     t.equal(connectCount, 1);
     t.equal(res, m);
