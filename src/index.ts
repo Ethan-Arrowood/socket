@@ -47,6 +47,7 @@ export class Socket {
   closed: Promise<void>;
 
   private socket: net.Socket | tls.TLSSocket;
+  private address: SocketAddress;
   private allowHalfOpen: boolean;
   private secureTransport: SocketOptions['secureTransport'];
   private closedResolved = false;
@@ -56,9 +57,10 @@ export class Socket {
   private startTlsCalled = false;
 
   constructor(
-    addressOrSocket: SocketAddress | Socket,
+    address: SocketAddress,
     options?: SocketOptions,
   ) {
+    this.address = address;
     this.secureTransport = options?.secureTransport ?? 'off';
     this.allowHalfOpen = options?.allowHalfOpen ?? true;
 
@@ -73,12 +75,13 @@ export class Socket {
       };
     });
 
-    this.socket =
-      addressOrSocket instanceof Socket
-        ? new tls.TLSSocket(addressOrSocket.socket)
-        : new net.Socket({
-            allowHalfOpen: this.allowHalfOpen,
-          });
+    this.socket = new net.Socket({
+      allowHalfOpen: this.allowHalfOpen,
+    });
+    
+    if (this.secureTransport === 'on') {
+      this.socket = new tls.TLSSocket(this.socket)
+    }
 
     this.socket.on('close', (hadError) => {
       if (!hadError && !this.closedFulfilled && !this.closedResolved) {
@@ -99,13 +102,13 @@ export class Socket {
     this.readable = readable;
     this.writable = writable;
 
-    if (!(addressOrSocket instanceof Socket)) {
-      this.socket.connect(addressOrSocket);
-    }
+    this.socket.connect(address);
   }
+
   get closedFulfilled(): boolean {
     return this.closedResolved || this.closedRejected;
   }
+
   // eslint-disable-next-line @typescript-eslint/require-await
   async close(): Promise<void> {
     this.socket.destroy();
@@ -124,6 +127,6 @@ export class Socket {
 
     void this.close();
 
-    return new Socket(this, { secureTransport: 'starttls' });
+    return new Socket(this.address, { secureTransport: 'on' });
   }
 }
