@@ -1,0 +1,37 @@
+{
+  "name": "socket",
+  "version": "0.0.1",
+  "description": "A Node.js Implementation of the Cloudflare Socket API",
+  "keywords": [],
+  "homepage": "https://github.com/vercel/socket#readme",
+  "bugs": {
+    "url": "https://github.com/vercel/socket/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vercel/socket.git"
+  },
+  "license": "MIT",
+  "author": "Ethan Arrowood <ethan@arrowood.dev>",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier .",
+    "lint": "eslint .",
+    "test": "tap --ts test"
+  },
+  "prettier": "@vercel/style-guide/prettier",
+  "devDependencies": {
+    "@types/node": "^20.1.7",
+    "@types/tap": "^15.0.8",
+    "@vercel/style-guide": "^4.0.2",
+    "eslint": "^8.40.0",
+    "prettier": "^2.8.8",
+    "tap": "^16.3.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
