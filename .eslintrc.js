@@ -1,7 +1,7 @@
 // eslint-disable-next-line unicorn/prefer-node-protocol
 const { resolve } = require('path');
 
-const project = resolve(__dirname, 'test.tsconfig.json');
+const project = resolve(__dirname, 'tsconfig.json');
 
 module.exports = {
   root: true,

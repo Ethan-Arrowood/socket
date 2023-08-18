@@ -1,4 +1,4 @@
-name: "Lint and Test"
+name: Format Check, Lint, and Test
 
 on:
   workflow_dispatch:
@@ -7,8 +7,8 @@ on:
       - main
 
 jobs:
-  build-and-publish:
-    runs-on: "ubuntu-latest"
+  format-check-lint-test:
+    runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v3
 
@@ -21,7 +21,7 @@ jobs:
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 8.5.1
+          version: 8.6.12
           run_install: false
 
       - name: Get pnpm store directory
@@ -40,9 +40,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        
+
+      - name: Format Check
+        run: pnpm format --check
+
       - name: Lint
         run: pnpm lint
-      
+
       - name: Test
         run: pnpm test -- --no-coverage # Disable coverage reporting for CI
