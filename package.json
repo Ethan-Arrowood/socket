@@ -19,7 +19,7 @@
     "format": "prettier .",
     "lint": "eslint .",
     "prepare": "husky install",
-    "test": "tap --ts test"
+    "test": "tap --ts test/*.test.ts"
   },
   "devDependencies": {
     "@types/node": "18.17.5",
