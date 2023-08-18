@@ -2,9 +2,9 @@
   "description": "The base configuration for the project. Extended configs are responsible for including files.",
   "extends": "@vercel/style-guide/typescript",
   "compilerOptions": {
-    "lib": ["ES2022"],
+    "lib": ["ES2023"],
     "target": "ES2022",
-    "module": "commonjs",
+    "module": "Node16",
     "moduleResolution": "node",
     "outDir": "./dist",
     "noEmit": true
