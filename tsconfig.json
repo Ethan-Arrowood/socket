@@ -1,14 +1,5 @@
 {
-  "extends": "@vercel/style-guide/typescript",
-  "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "outDir": "./dist",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true
-  },
-  "include": ["src"]
+  "description": "The default config; extends `tsconfig.base.json`. Used implicitly by multiple tools.",
+  "extends": "./tsconfig.base.json",
+  "include": ["src", "test"]
 }

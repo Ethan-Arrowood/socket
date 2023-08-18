@@ -1,0 +1,9 @@
+{
+  "description": "A configuration for building the project. Only includes `src`. Specifies output compiler options.",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist"
+  },
+  "include": ["src"]
+}
