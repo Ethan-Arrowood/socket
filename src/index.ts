@@ -1,30 +1,9 @@
 import net from 'node:net';
 import tls from 'node:tls';
+import { Duplex } from 'node:stream';
 import type { ReadableStream, WritableStream } from 'node:stream/web';
-
-export interface SocketOptions {
-  /**
-   * Specifies whether or not to use TLS when creating the TCP socket.
-   * `off` — Do not use TLS.
-   * `on` — Use TLS.
-   * `starttls` — Do not use TLS initially, but allow the socket to be upgraded to use TLS by calling startTls().
-   */
-  secureTransport?: 'off' | 'on' | 'starttls';
-  /**
-   * Defines whether the writable side of the TCP socket will automatically close on end-of-file (EOF).
-   * When set to false, the writable side of the TCP socket will automatically close on EOF.
-   * When set to true, the writable side of the TCP socket will remain open on EOF.
-   * This option is similar to that offered by the Node.js net module and allows interoperability with code which utilizes it.
-   */
-  allowHalfOpen?: boolean;
-}
-
-export interface SocketAddress {
-  /** The hostname to connect to. Example: `vercel.com`. */
-  hostname: string;
-  /** The port number to connect to. Example: `5432`. */
-  port: number;
-}
+import type { SocketAddress, SocketOptions } from './types';
+import { isSocketAddress } from './is-socket-address';
 
 export function connect(
   address: SocketAddress | string,
@@ -42,42 +21,51 @@ export function connect(
 }
 
 export class Socket {
-  readable: ReadableStream;
-  writable: WritableStream;
+  readable: ReadableStream<unknown>;
+  writable: WritableStream<unknown>;
   closed: Promise<void>;
 
   private socket: net.Socket | tls.TLSSocket;
-  private address: SocketAddress;
   private allowHalfOpen: boolean;
   private secureTransport: SocketOptions['secureTransport'];
   private closedResolved = false;
   private closedRejected = false;
   private closedResolve!: () => void;
-  private closedReject!: (reason?: any) => void;
+  private closedReject!: (reason?: unknown) => void;
   private startTlsCalled = false;
 
-  constructor(address: SocketAddress, options?: SocketOptions) {
-    this.address = address;
+  constructor(
+    addressOrSocket: SocketAddress | net.Socket,
+    options?: SocketOptions,
+  ) {
     this.secureTransport = options?.secureTransport ?? 'off';
     this.allowHalfOpen = options?.allowHalfOpen ?? true;
 
     this.closed = new Promise((resolve, reject) => {
-      this.closedResolve = (): void => {
+      this.closedResolve = (...args): void => {
         this.closedResolved = true;
-        resolve();
+        resolve(...args);
       };
-      this.closedReject = (): void => {
+      this.closedReject = (...args): void => {
         this.closedRejected = true;
-        reject();
+        // eslint-disable-next-line prefer-promise-reject-errors
+        reject(...args);
       };
     });
 
-    this.socket = new net.Socket({
-      allowHalfOpen: this.allowHalfOpen,
-    });
-
-    if (this.secureTransport === 'on') {
-      this.socket = new tls.TLSSocket(this.socket);
+    if (isSocketAddress(addressOrSocket)) {
+      const connectOptions: net.NetConnectOpts = {
+        host: addressOrSocket.hostname,
+        port: addressOrSocket.port,
+        allowHalfOpen: this.allowHalfOpen,
+      };
+      if (this.secureTransport === 'on') {
+        this.socket = tls.connect(connectOptions);
+      } else {
+        this.socket = net.connect(connectOptions);
+      }
+    } else {
+      this.socket = new tls.TLSSocket(addressOrSocket);
     }
 
     this.socket.on('close', (hadError) => {
@@ -93,13 +81,12 @@ export class Socket {
     });
 
     // types are wrong. fixed based on docs https://nodejs.org/dist/latest-v19.x/docs/api/stream.html#streamduplextowebstreamduplex
-    const { readable, writable } = net.Socket.Duplex.toWeb(
-      this.socket,
-    ) as unknown as { readable: ReadableStream; writable: WritableStream };
+    const { readable, writable } = Duplex.toWeb(this.socket) as unknown as {
+      readable: ReadableStream<unknown>;
+      writable: WritableStream<unknown>;
+    };
     this.readable = readable;
     this.writable = writable;
-
-    this.socket.connect(address);
   }
 
   get closedFulfilled(): boolean {
@@ -122,8 +109,8 @@ export class Socket {
       this.startTlsCalled = true;
     }
 
-    void this.close();
-
-    return new Socket(this.address, { secureTransport: 'on' });
+    return new Socket(this.socket, { secureTransport: 'on' });
   }
 }
+
+export type * from './types';
