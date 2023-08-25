@@ -29,3 +29,21 @@ void tap.test(
     t.end();
   },
 );
+
+void tap.test('Socket closed promise', (t) => {
+  void t.test(
+    '`.closed` and `.close()` should be the same object',
+    async (t) => {
+      const server = net.createServer();
+      const address = await listenAndGetSocketAddress(server);
+      const socket = connect(address);
+      const closed = socket.closed;
+      const close = socket.close();
+      t.equal(closed, close);
+      await close;
+      server.close();
+      t.end();
+    },
+  );
+  t.end();
+});

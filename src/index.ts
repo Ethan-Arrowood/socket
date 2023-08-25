@@ -28,8 +28,6 @@ export class Socket {
   private socket: net.Socket | tls.TLSSocket;
   private allowHalfOpen: boolean;
   private secureTransport: SocketOptions['secureTransport'];
-  private closedResolved = false;
-  private closedRejected = false;
   private closedResolve!: () => void;
   private closedReject!: (reason?: unknown) => void;
   private startTlsCalled = false;
@@ -43,11 +41,9 @@ export class Socket {
 
     this.closed = new Promise((resolve, reject) => {
       this.closedResolve = (...args): void => {
-        this.closedResolved = true;
         resolve(...args);
       };
       this.closedReject = (...args): void => {
-        this.closedRejected = true;
         // eslint-disable-next-line prefer-promise-reject-errors
         reject(...args);
       };
@@ -69,15 +65,13 @@ export class Socket {
     }
 
     this.socket.on('close', (hadError) => {
-      if (!hadError && !this.closedFulfilled && !this.closedResolved) {
+      if (!hadError) {
         this.closedResolve();
       }
     });
 
     this.socket.on('error', (err) => {
-      if (!this.closedFulfilled && !this.closedRejected) {
-        this.closedReject(err);
-      }
+      this.closedReject(err);
     });
 
     // types are wrong. fixed based on docs https://nodejs.org/dist/latest-v19.x/docs/api/stream.html#streamduplextowebstreamduplex
@@ -87,10 +81,6 @@ export class Socket {
     };
     this.readable = readable;
     this.writable = writable;
-  }
-
-  get closedFulfilled(): boolean {
-    return this.closedResolved || this.closedRejected;
   }
 
   close(): Promise<void> {
