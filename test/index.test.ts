@@ -36,22 +36,8 @@ void tap.test(
 );
 
 void tap.test('Socket closed promise', (t) => {
-  void t.test(
-    '`.closed` and `.close()` should be the same object',
-    async (t) => {
-      const server = net.createServer();
-      const address = await listenAndGetSocketAddress(server);
-      const socket = connect(address);
-      const closed = socket.closed;
-      const close = socket.close();
-      t.equal(closed, close);
-      await close;
-      server.close();
-      t.end();
-    },
-  );
   void t.test(`socket properly closes after .close() is awaited`, async (t) => {
-    t.plan(3);
+    t.plan(4);
     const server = net.createServer();
     const message = 'abc\r\n';
 
@@ -71,7 +57,14 @@ void tap.test('Socket closed promise', (t) => {
     const { writer } = getReaderWriterFromSocket(socket);
     await t.resolves(writer.write(message));
 
-    await socket.close();
+    const close = socket.close();
+    t.equal(
+      socket.closed,
+      close,
+      '`.closed` and `.close()` should be the same object',
+    );
+    await close;
+
     await t.rejects(writer.write('x'));
 
     await once(server, 'close');
