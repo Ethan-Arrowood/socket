@@ -1,7 +1,12 @@
 import net from 'node:net';
+import { once } from 'node:events';
 import tap from 'tap';
 import { connect } from '../src';
-import { listenAndGetSocketAddress, writeAndReadSocket } from './utils';
+import {
+  getReaderWriterFromSocket,
+  listenAndGetSocketAddress,
+  writeAndReadSocket,
+} from './utils';
 
 void tap.test(
   'Socket connected to tcp server with secureTransport: off',
@@ -45,5 +50,31 @@ void tap.test('Socket closed promise', (t) => {
       t.end();
     },
   );
+  void t.test(`socket properly closes after .close() is awaited`, async (t) => {
+    t.plan(3);
+    const server = net.createServer();
+    const message = 'abc\r\n';
+
+    server.on('connection', (c) => {
+      c.setEncoding('utf-8');
+      c.on('data', (data) => {
+        t.equal(data, message);
+      });
+      c.on('end', () => {
+        server.close();
+      });
+    });
+
+    const address = await listenAndGetSocketAddress(server);
+    const socket = connect(address);
+
+    const { writer } = getReaderWriterFromSocket(socket);
+    await t.resolves(writer.write(message));
+
+    await socket.close();
+    await t.rejects(writer.write('x'));
+
+    await once(server, 'close');
+  });
   t.end();
 });

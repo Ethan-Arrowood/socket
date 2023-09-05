@@ -74,7 +74,7 @@ export class Socket {
       this.closedReject(err);
     });
 
-    // types are wrong. fixed based on docs https://nodejs.org/dist/latest-v19.x/docs/api/stream.html#streamduplextowebstreamduplex
+    // types are wrong. fixed based on docs https://nodejs.org/dist/latest/docs/api/stream.html#streamduplextowebstreamduplex
     const { readable, writable } = Duplex.toWeb(this.socket) as unknown as {
       readable: ReadableStream<unknown>;
       writable: WritableStream<unknown>;
@@ -84,8 +84,9 @@ export class Socket {
   }
 
   close(): Promise<void> {
-    this.socket.destroy();
-    this.closedResolve();
+    this.socket.end(() => {
+      this.closedResolve();
+    });
     return this.closed;
   }
 
