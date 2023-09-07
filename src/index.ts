@@ -11,7 +11,7 @@ export function connect(
 ): Socket {
   if (typeof address === 'string') {
     const url = new URL(address);
-    // eslint-disable-next-line no-param-reassign
+    // eslint-disable-next-line no-param-reassign -- there is no harm reassigning to this param
     address = {
       hostname: url.hostname,
       port: parseInt(url.port),
@@ -44,7 +44,7 @@ export class Socket {
         resolve(...args);
       };
       this.closedReject = (...args): void => {
-        // eslint-disable-next-line prefer-promise-reject-errors
+        // eslint-disable-next-line prefer-promise-reject-errors -- ESLint gets this wrong as we are completely forwarding the arguments to reject.
         reject(...args);
       };
     });
