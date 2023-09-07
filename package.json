@@ -1,5 +1,5 @@
 {
-  "name": "socket",
+  "name": "@wintercg/socket",
   "version": "0.0.1",
   "description": "A Node.js Implementation of the Cloudflare Socket API",
   "keywords": [],
@@ -19,7 +19,8 @@
     "format": "prettier .",
     "lint": "eslint .",
     "prepare": "husky install",
-    "test": "tap --ts test/*.test.ts"
+    "test": "tap --ts test/*.test.ts",
+    "type-check": "tsc"
   },
   "devDependencies": {
     "@types/node": "18.17.5",
