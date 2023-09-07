@@ -4,6 +4,8 @@ A Node.js Implementation of the Cloudflare Socket API
 
 ## Contributing
 
+Requirements:
+
 - Node.js v18.x
 - pnpm v8.6.12 (recommend using corepack)
 
