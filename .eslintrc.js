@@ -1,5 +1,4 @@
-// eslint-disable-next-line unicorn/prefer-node-protocol
-const { resolve } = require('path');
+const { resolve } = require('node:path');
 
 const project = resolve(__dirname, 'tsconfig.json');
 
