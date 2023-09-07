@@ -3,13 +3,13 @@
   "version": "0.0.1",
   "description": "A Node.js Implementation of the Cloudflare Socket API",
   "keywords": [],
-  "homepage": "https://github.com/vercel/socket#readme",
+  "homepage": "https://github.com/wintercg/socket#readme",
   "bugs": {
-    "url": "https://github.com/vercel/socket/issues"
+    "url": "https://github.com/wintercg/socket/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vercel/socket.git"
+    "url": "git+https://github.com/wintercg/socket.git"
   },
   "license": "MIT",
   "author": "Ethan Arrowood <ethan@arrowood.dev>",
