@@ -1,6 +1,6 @@
 {
   "name": "@arrowood.dev/socket",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Node.js Implementation of the Cloudflare Socket API",
   "keywords": [],
   "homepage": "https://github.com/ethan-arrowood/socket#readme",
