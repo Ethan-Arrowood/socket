@@ -1,15 +1,15 @@
 {
-  "name": "@wintercg/socket",
+  "name": "@ethan-arrowood/socket",
   "version": "0.0.1",
   "description": "A Node.js Implementation of the Cloudflare Socket API",
   "keywords": [],
-  "homepage": "https://github.com/wintercg/socket#readme",
+  "homepage": "https://github.com/ethan-arrowood/socket#readme",
   "bugs": {
-    "url": "https://github.com/wintercg/socket/issues"
+    "url": "https://github.com/ethan-arrowood/socket/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wintercg/socket.git"
+    "url": "git+https://github.com/ethan-arrowood/socket.git"
   },
   "license": "MIT",
   "author": "Ethan Arrowood <ethan@arrowood.dev>",
