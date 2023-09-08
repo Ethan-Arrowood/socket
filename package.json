@@ -1,5 +1,5 @@
 {
-  "name": "@ethan-arrowood/socket",
+  "name": "@arrowood.dev/socket",
   "version": "0.0.1",
   "description": "A Node.js Implementation of the Cloudflare Socket API",
   "keywords": [],
@@ -14,6 +14,9 @@
   "license": "MIT",
   "author": "Ethan Arrowood <ethan@arrowood.dev>",
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "format": "prettier .",

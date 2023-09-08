@@ -1,6 +1,12 @@
-# socket
+# @arrowood.dev/socket
 
 A Node.js Implementation of the Cloudflare Socket API
+
+## Installation
+
+```
+npm i @arrowood.dev/socket
+```
 
 ## Contributing
 
