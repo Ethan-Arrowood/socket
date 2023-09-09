@@ -9,6 +9,10 @@ export function connect(
   address: SocketAddress | string,
   options?: SocketOptions,
 ): Socket {
+  if (navigator.userAgent === 'Cloudflare-Workers') {
+    const { connect } = await import("cloudflare:sockets");
+    return connect(address, options);
+  }
   if (typeof address === 'string') {
     const url = new URL(address);
     // eslint-disable-next-line no-param-reassign -- there is no harm reassigning to this param
