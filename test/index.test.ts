@@ -2,7 +2,11 @@ import net from 'node:net';
 import { once } from 'node:events';
 import tap from 'tap';
 import { connect } from '../src';
-import { listenAndGetSocketAddress, writeAndReadSocket } from './utils';
+import {
+  getReaderWriterFromSocket,
+  listenAndGetSocketAddress,
+  writeAndReadSocket,
+} from './utils';
 
 void tap.test(
   'Socket connected to tcp server with secureTransport: off',
@@ -47,9 +51,9 @@ void tap.test(
       'should fail to pipe after close',
     );
 
-    t.equal(connectCount, 1, 'should connect one time');
-
     await once(server, 'close');
+
+    t.equal(connectCount, 1, 'should connect one time');
   },
 );
 
@@ -79,11 +83,52 @@ void tap.test(
 
     const writer = socket.writable.getWriter();
     await t.resolves(writer.write(message));
-
     await t.resolves(socket.close());
-
-    t.equal(connectCount, 1, 'should connect one time');
-
     await once(server, 'close');
+    t.equal(connectCount, 1, 'should connect one time');
   },
 );
+
+for (const data of [
+  new Uint8Array([0, 1, 2]),
+  new Uint16Array([0, 1, 2]),
+  new Uint32Array([0, 1, 2]),
+  new BigUint64Array([0n, 1n, 2n]),
+]) {
+  void tap.test(
+    `Read & write ${data.constructor.name} from the server`,
+    async (t) => {
+      t.plan(4);
+
+      const message =
+        data.constructor.name === 'Uint8Array'
+          ? (data as Uint8Array)
+          : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+
+      const server = net.createServer();
+      server.on('connection', (c) => {
+        c.setEncoding('binary');
+        c.on('data', (data) => {
+          t.equal(data, Buffer.from(message.buffer).toString());
+          c.write(message);
+        });
+        c.on('end', () => {
+          server.close();
+        });
+      });
+
+      const address = await listenAndGetSocketAddress(server);
+
+      const socket = connect(`tcp://localhost:${address.port}`);
+      const { reader, writer } = getReaderWriterFromSocket(socket);
+
+      await t.resolves(writer.write(message));
+
+      await t.resolveMatch(reader.read(), { value: message, done: false });
+
+      await t.resolves(socket.close());
+
+      await once(server, 'close');
+    },
+  );
+}
