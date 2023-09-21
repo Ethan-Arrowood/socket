@@ -79,13 +79,25 @@ void tap.test(
 
     const address = await listenAndGetSocketAddress(server);
 
-    const socket = connect(`tcp://localhost:${address.port}`);
+    const socket = connect(`localhost:${address.port}`);
 
     const writer = socket.writable.getWriter();
     await t.resolves(writer.write(message));
     await t.resolves(socket.close());
     await once(server, 'close');
     t.equal(connectCount, 1, 'should connect one time');
+  },
+);
+
+void tap.test(
+  'connect on port 443 works',
+  async (t) => {
+    t.plan(2);
+
+    const socket = connect(`google.com:443`);
+
+    await t.resolves(socket.close());
+    await t.resolves(socket.closed);
   },
 );
 
@@ -119,7 +131,7 @@ for (const data of [
 
       const address = await listenAndGetSocketAddress(server);
 
-      const socket = connect(`tcp://localhost:${address.port}`);
+      const socket = connect(`localhost:${address.port}`);
       const { reader, writer } = getReaderWriterFromSocket(socket);
 
       await t.resolves(writer.write(message));
