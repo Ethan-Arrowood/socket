@@ -71,7 +71,11 @@ export class Socket {
     });
 
     this.socket.on('error', (err) => {
-      this.closedReject(err);
+      if (err instanceof Error) {
+        this.closedReject(new SocketError(err.message));
+      } else {
+        this.closedReject(new SocketError(err as string));
+      }
     });
 
     // types are wrong. fixed based on docs https://nodejs.org/dist/latest/docs/api/stream.html#streamduplextowebstreamduplex
@@ -92,15 +96,21 @@ export class Socket {
 
   startTls(): Socket {
     if (this.secureTransport !== 'starttls') {
-      throw new Error("secureTransport must be set to 'starttls'");
+      throw new SocketError("secureTransport must be set to 'starttls'");
     }
     if (this.startTlsCalled) {
-      throw new Error('can only call startTls once');
+      throw new SocketError('can only call startTls once');
     } else {
       this.startTlsCalled = true;
     }
 
     return new Socket(this.socket, { secureTransport: 'on' });
+  }
+}
+
+export class SocketError extends TypeError {
+  constructor(message: string) {
+    super(`SocketError: ${message}`);
   }
 }
 

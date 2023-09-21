@@ -2,7 +2,7 @@ import tls from 'node:tls';
 import fs from 'node:fs';
 import path from 'node:path';
 import tap from 'tap';
-import { connect } from '../src';
+import { SocketError, connect } from '../src';
 import { listenAndGetSocketAddress, writeAndReadSocket } from './utils';
 
 function getTLSServer(): tls.Server {
@@ -51,7 +51,7 @@ void tap.test('Socket `connect` with TLS', (t) => {
         () => {
           socket.startTls();
         },
-        new Error("secureTransport must be set to 'starttls'"),
+        new SocketError("secureTransport must be set to 'starttls'"),
         'calling .startTls() throws an error',
       );
       await socket.close();
@@ -98,7 +98,7 @@ void tap.test('Socket `connect` with TLS', (t) => {
         () => {
           socket.startTls();
         },
-        new Error('can only call startTls once'),
+        new SocketError('can only call startTls once'),
         'second call to .startTls() throws an error',
       );
       await socket.close();
