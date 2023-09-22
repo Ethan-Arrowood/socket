@@ -51,4 +51,4 @@ jobs:
         run: pnpm type-check
 
       - name: Test
-        run: pnpm test -- --no-coverage # Disable coverage reporting for CI
+        run: pnpm test -- --coverage-report=none # Disable coverage reporting for CI

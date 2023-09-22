@@ -51,7 +51,7 @@ void tap.test('Socket `connect` with TLS', (t) => {
         () => {
           socket.startTls();
         },
-        "secureTransport must be set to 'starttls'",
+        new Error("secureTransport must be set to 'starttls'"),
         'calling .startTls() throws an error',
       );
       await socket.close();
@@ -98,7 +98,7 @@ void tap.test('Socket `connect` with TLS', (t) => {
         () => {
           socket.startTls();
         },
-        'can only call startTls once',
+        new Error('can only call startTls once'),
         'second call to .startTls() throws an error',
       );
       await socket.close();
