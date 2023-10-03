@@ -79,7 +79,7 @@ void tap.test(
 
     const address = await listenAndGetSocketAddress(server);
 
-    const socket = connect(`tcp://localhost:${address.port}`);
+    const socket = connect(`localhost:${address.port}`);
 
     const writer = socket.writable.getWriter();
     await t.resolves(writer.write(message));
@@ -88,6 +88,11 @@ void tap.test(
     t.equal(connectCount, 1, 'should connect one time');
   },
 );
+
+void tap.test('connect on port 443 works', async (t) => {
+  const socket = connect(`github.com:443`);
+  await t.resolves(socket.close());
+});
 
 for (const data of [
   new Uint8Array([0, 1, 2]),
@@ -117,7 +122,7 @@ for (const data of [
 
       const address = await listenAndGetSocketAddress(server);
 
-      const socket = connect(`tcp://localhost:${address.port}`);
+      const socket = connect(`localhost:${address.port}`);
       const { reader, writer } = getReaderWriterFromSocket(socket);
 
       await t.resolves(writer.write(message));
