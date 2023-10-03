@@ -110,8 +110,6 @@ for (const data of [
   void tap.test(
     `Read & write ${data.constructor.name} from the server`,
     async (t) => {
-      t.plan(4);
-
       const message =
         data.constructor.name === 'Uint8Array'
           ? (data as Uint8Array)
