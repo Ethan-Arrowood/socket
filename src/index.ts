@@ -10,11 +10,11 @@ export function connect(
   options?: SocketOptions,
 ): Socket {
   if (typeof address === 'string') {
-    const url = new URL("https://" + address);
+    const url = new URL(`https://${address}`);
     // eslint-disable-next-line no-param-reassign -- there is no harm reassigning to this param
     address = {
       hostname: url.hostname,
-      port: parseInt(url.port == "" ? "443" : url.port),
+      port: parseInt(url.port === '' ? '443' : url.port),
     };
   }
   return new Socket(address, options);
