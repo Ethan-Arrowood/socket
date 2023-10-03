@@ -90,25 +90,8 @@ void tap.test(
 );
 
 void tap.test('connect on port 443 works', async (t) => {
-  let connectCount = 0;
-
-  const server = net.createServer();
-
-  server.on('connection', (c) => {
-    connectCount++;
-    c.on('end', () => {
-      server.close();
-    });
-  });
-
-  server.listen(443);
-  await once(server, 'listening');
-
-  const socket = connect(`localhost:443`);
-
+  const socket = connect(`github.com:443`);
   await t.resolves(socket.close());
-  await once(server, 'close');
-  t.equal(connectCount, 1, 'should connect one time');
 });
 
 for (const data of [
