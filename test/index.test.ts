@@ -140,7 +140,7 @@ void tap.test('SocketError is thrown on connect failure', async (t) => {
   t.plan(1);
 
   try {
-    const socket = connect('tcp://127.0.0.1:1234');
+    const socket = connect('127.0.0.1:1234');
     await socket.closed;
   } catch (err) {
     t.same(err, new SocketError('connect ECONNREFUSED 127.0.0.1:1234'));
