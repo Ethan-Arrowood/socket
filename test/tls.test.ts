@@ -4,6 +4,7 @@ import path from 'node:path';
 import tap from 'tap';
 import { SocketError, connect } from '../src';
 import { listenAndGetSocketAddress, writeAndReadSocket } from './utils';
+import { generateCerts, deleteCerts } from './gen-certs';
 
 function getTLSServer(): tls.Server {
   const server = tls.createServer({
@@ -19,6 +20,11 @@ function getTLSServer(): tls.Server {
 void tap.test('Socket `connect` with TLS', (t) => {
   t.before(() => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    generateCerts();
+  });
+
+  t.after(() => {
+    deleteCerts();
   });
 
   void t.test('with `secureTransport: "on"`', (t) => {
