@@ -2,7 +2,7 @@ import net from 'node:net';
 import tls from 'node:tls';
 import { Duplex } from 'node:stream';
 import type { ReadableStream, WritableStream } from 'node:stream/web';
-import type { SocketAddress, SocketOptions } from './types';
+import type { SocketAddress, SocketInfo, SocketOptions } from './types';
 import { isSocketAddress } from './is-socket-address';
 
 export function connect(
@@ -23,11 +23,15 @@ export function connect(
 export class Socket {
   readable: ReadableStream<unknown>;
   writable: WritableStream<unknown>;
+  opened: Promise<SocketInfo>;
   closed: Promise<void>;
 
   private socket: net.Socket | tls.TLSSocket;
   private allowHalfOpen: boolean;
   private secureTransport: SocketOptions['secureTransport'];
+  private openedIsResolved: boolean;
+  private openedResolve!: (info: SocketInfo) => void;
+  private openedReject!: (reason?: unknown) => void;
   private closedResolve!: () => void;
   private closedReject!: (reason?: unknown) => void;
   private startTlsCalled = false;
@@ -38,6 +42,19 @@ export class Socket {
   ) {
     this.secureTransport = options?.secureTransport ?? 'off';
     this.allowHalfOpen = options?.allowHalfOpen ?? true;
+
+    this.openedIsResolved = false;
+    this.opened = new Promise((resolve, reject) => {
+      this.openedResolve = (info): void => {
+        this.openedIsResolved = true;
+        resolve(info);
+      };
+      this.openedReject = (...args): void => {
+        this.openedIsResolved = true;
+        // eslint-disable-next-line prefer-promise-reject-errors -- ESLint gets this wrong as we are completely forwarding the arguments to reject.
+        reject(...args);
+      };
+    });
 
     this.closed = new Promise((resolve, reject) => {
       this.closedResolve = (...args): void => {
@@ -64,6 +81,22 @@ export class Socket {
       this.socket = new tls.TLSSocket(addressOrSocket);
     }
 
+    if (this.socket instanceof tls.TLSSocket) {
+      this.socket.on('secureConnect', () => {
+        this.openedResolve({
+          remoteAddress: this.socket.remoteAddress,
+          localAddress: this.socket.localAddress,
+        });
+      });
+    } else {
+      this.socket.on('connect', () => {
+        this.openedResolve({
+          remoteAddress: this.socket.remoteAddress,
+          localAddress: this.socket.localAddress,
+        });
+      });
+    }
+
     this.socket.on('close', (hadError) => {
       if (!hadError) {
         this.closedResolve();
@@ -71,11 +104,13 @@ export class Socket {
     });
 
     this.socket.on('error', (err) => {
-      if (err instanceof Error) {
-        this.closedReject(new SocketError(err.message));
-      } else {
-        this.closedReject(new SocketError(err as string));
+      const socketError = new SocketError(
+        err instanceof Error ? err.message : (err as string),
+      );
+      if (!this.openedIsResolved) {
+        this.openedReject(socketError);
       }
+      this.closedReject(socketError);
     });
 
     // types are wrong. fixed based on docs https://nodejs.org/dist/latest/docs/api/stream.html#streamduplextowebstreamduplex

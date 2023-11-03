@@ -21,3 +21,8 @@ export interface SocketAddress {
   /** The port number to connect to. Example: `5432`. */
   port: number;
 }
+
+export interface SocketInfo {
+  remoteAddress?: string;
+  localAddress?: string;
+}
