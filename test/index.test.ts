@@ -11,7 +11,7 @@ import {
 void tap.test(
   'Socket connected to tcp server with secureTransport: off',
   async (t) => {
-    t.plan(6);
+    t.plan(7);
     let connectCount = 0;
     const message = 'abcde\r\n';
 
@@ -37,6 +37,8 @@ void tap.test(
       message,
       'should pipe message',
     );
+
+    await t.resolveMatch(socket.opened, { localAddress: '::1' });
 
     const close = socket.close();
     t.equal(
@@ -137,13 +139,15 @@ for (const data of [
 }
 
 void tap.test('SocketError is thrown on connect failure', async (t) => {
-  t.plan(1);
+  t.plan(2);
 
+  const expectedError = new SocketError('connect ECONNREFUSED 127.0.0.1:1234');
   try {
     const socket = connect('127.0.0.1:1234');
+    socket.opened.catch((err) => t.same(err, expectedError));
     await socket.closed;
   } catch (err) {
-    t.same(err, new SocketError('connect ECONNREFUSED 127.0.0.1:1234'));
+    t.same(err, expectedError);
   } finally {
     t.end();
   }
