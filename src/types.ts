@@ -13,6 +13,19 @@ export interface SocketOptions {
    * This option is similar to that offered by the Node.js net module and allows interoperability with code which utilizes it.
    */
   allowHalfOpen?: boolean;
+  /**
+   * The Application-Layer Protocol Negotiation list to send, as an array of strings.
+   * If the server agrees with one of the protocols specified in this list, it will
+   * return the matching protocol in the info property. May be specified if and only
+   * if secureTransport is on or starttls.
+   */
+  alpn?: string[];
+  /**
+   * The Server Name Indication TLS option to send as part of the TLS handshake.
+   * If specified, requests that the server send a certificate with a matching
+   * common name. May be specified if and only if secureTransport is on or starttls.
+   */
+  sni?: string;
 }
 
 export interface SocketAddress {
@@ -25,4 +38,5 @@ export interface SocketAddress {
 export interface SocketInfo {
   remoteAddress?: string;
   localAddress?: string;
+  alpn?: string;
 }

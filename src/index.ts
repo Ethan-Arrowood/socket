@@ -73,19 +73,34 @@ export class Socket {
         allowHalfOpen: this.allowHalfOpen,
       };
       if (this.secureTransport === 'on') {
-        this.socket = tls.connect(connectOptions);
+        this.socket = tls.connect({
+          ...connectOptions,
+          ALPNProtocols: options?.alpn,
+          servername: options?.sni,
+        });
       } else {
         this.socket = net.connect(connectOptions);
       }
     } else {
-      this.socket = new tls.TLSSocket(addressOrSocket);
+      this.socket = new tls.TLSSocket(addressOrSocket, {
+        ALPNProtocols: options?.alpn,
+      });
     }
 
     if (this.socket instanceof tls.TLSSocket) {
       this.socket.on('secureConnect', () => {
+        // Typescript doesn't deduce that it can only be TLSSocket in this scope
+        const tlsSocket = this.socket as tls.TLSSocket;
+
+        let alpnProtocol: string | undefined;
+        if (typeof tlsSocket.alpnProtocol === 'string') {
+          alpnProtocol = tlsSocket.alpnProtocol;
+        }
+
         this.openedResolve({
           remoteAddress: this.socket.remoteAddress,
           localAddress: this.socket.localAddress,
+          alpn: alpnProtocol,
         });
       });
     } else {
