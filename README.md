@@ -1,6 +1,10 @@
 # @arrowood.dev/socket
 
-A Node.js Implementation of the Cloudflare Socket API
+A Node.js Implementation of `connect()`, the [TCP Socket API](https://github.com/wintercg/proposal-sockets-api) proposed within WinterCG, and implemented in [Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/).
+
+You can use this to provide the `connect()` API in a Node.js environment.
+
+If you need to provide an interface similar to `net.connect()` or `tls.connect()` from Node.js, from an environment, where only the proposed Socket API is available, [`pg-cloudflare`](https://github.com/brianc/node-postgres/blob/master/packages/pg-cloudflare/README.md) provides such an interface.
 
 ## Installation
 
