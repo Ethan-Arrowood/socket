@@ -5,12 +5,13 @@ import tap from 'tap';
 import { SocketError, connect } from '../src';
 import { listenAndGetSocketAddress, writeAndReadSocket } from './utils';
 
-function getTLSServer(): tls.Server {
+function getTLSServer(alpnProtocols?: string[]): tls.Server {
   const server = tls.createServer({
     key: fs.readFileSync(path.join(__dirname, '/certs/server/server.key')),
     cert: fs.readFileSync(path.join(__dirname, '/certs/server/server.crt')),
     ca: fs.readFileSync(path.join(__dirname, '/certs/ca/ca.crt')),
     rejectUnauthorized: false,
+    ALPNProtocols: alpnProtocols,
   });
 
   return server;
@@ -54,6 +55,27 @@ void tap.test('Socket `connect` with TLS', (t) => {
         new SocketError("secureTransport must be set to 'starttls'"),
         'calling .startTls() throws an error',
       );
+      await socket.close();
+      server.close();
+      t.end();
+    });
+
+    void t.test('can get correct alpn protocol', async (t) => {
+      const server = getTLSServer(['h2c']);
+      const address = await listenAndGetSocketAddress(server);
+      const socket = connect(address, {
+        secureTransport: 'on',
+        alpn: ['h2c'],
+      });
+      t.throws(
+        () => {
+          socket.startTls();
+        },
+        new SocketError("secureTransport must be set to 'starttls'"),
+        'calling .startTls() throws an error',
+      );
+      const socketInfo = await socket.opened;
+      t.equal(socketInfo.alpn, 'h2c');
       await socket.close();
       server.close();
       t.end();
