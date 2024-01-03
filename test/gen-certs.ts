@@ -10,7 +10,7 @@ const clientPath = join(certsPath, '/client');
 /**
  * Generate certificates for testing.
  */
-function generateCerts(): void {
+export function generateCerts(): void {
   // Delete certs directory if it exists
   execSync(`rm -rf ${certsPath}`);
 
@@ -79,7 +79,7 @@ function generateCerts(): void {
 /**
  * Deletes/cleans up certificates.
  */
-function deleteCerts(): void {
+export function deleteCerts(): void {
   unlinkSync(join(caPath, 'ca.key'));
   unlinkSync(join(caPath, 'ca.crt'));
   unlinkSync(join(serverPath, 'server.key'));
@@ -91,5 +91,3 @@ function deleteCerts(): void {
 
   execSync(`rm -rf ${certsPath}`);
 }
-
-export { generateCerts, deleteCerts };
